@@ -1,0 +1,21 @@
+version: v2
+
+clean: true
+
+managed:
+  enabled: true
+  disable:
+    - module: buf.build/googleapis/googleapis
+  override:
+    - file_option: go_package_prefix
+      value: github.com/way-platform/protobg-go/internal/gen
+
+inputs:
+  - directory: "."
+
+plugins:
+  - local: ["go", "tool", "-modfile", "../tools/go.mod", "protoc-gen-go"]
+    out: ../internal/gen
+    opt:
+      - module=github.com/way-platform/protobg-go/internal/gen
+      - default_api_level=API_OPAQUE

@@ -1,0 +1,147 @@
+edition = "2023";
+
+package wayplatform.testdata.v1;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "google/type/date.proto";
+import "google/type/datetime.proto";
+import "google/type/latlng.proto";
+import "google/type/timeofday.proto";
+
+// Kitchen sink message for testing purposes.
+message KitchenSink {
+  // Floating point types
+  double double_value = 1;
+  float float_value = 2;
+
+  // Signed integer types
+  int32 int32_value = 3;
+  int64 int64_value = 4;
+  sint32 sint32_value = 5;
+  sint64 sint64_value = 6;
+
+  // Unsigned integer types
+  uint32 uint32_value = 7;
+  uint64 uint64_value = 8;
+
+  // Fixed-width integer types
+  fixed32 fixed32_value = 9;
+  fixed64 fixed64_value = 10;
+  sfixed32 sfixed32_value = 11;
+  sfixed64 sfixed64_value = 12;
+
+  // Boolean type
+  bool bool_value = 13;
+
+  // String and bytes types
+  string string_value = 14;
+  bytes bytes_value = 15;
+
+  // Enum type
+  TestEnum enum_value = 16;
+
+  // Repeated fields (arrays)
+  repeated string repeated_string = 17;
+  repeated int32 repeated_int32 = 18;
+  repeated NestedMessage repeated_nested = 19;
+
+  // Nested message
+  NestedMessage nested_message = 20;
+
+  // Map fields
+  map<string, string> map_string_string = 21;
+  map<string, int32> map_string_int32 = 22;
+  map<int32, string> map_int32_string = 23;
+  map<string, NestedMessage> map_string_nested = 24;
+
+  // Well-known type fields for testing
+  google.protobuf.Timestamp timestamp_value = 25;
+  google.protobuf.Duration duration_value = 26;
+  google.type.Date date_value = 56;
+  google.type.DateTime datetime_value = 57;
+  google.type.TimeOfDay timeofday_value = 58;
+
+  // Wrapper types
+  google.protobuf.StringValue string_wrapper_value = 27;
+  google.protobuf.Int32Value int32_wrapper_value = 28;
+  google.protobuf.Int64Value int64_wrapper_value = 29;
+  google.protobuf.UInt32Value uint32_wrapper_value = 30;
+  google.protobuf.UInt64Value uint64_wrapper_value = 31;
+  google.protobuf.BoolValue bool_wrapper_value = 32;
+  google.protobuf.FloatValue float_wrapper_value = 33;
+  google.protobuf.DoubleValue double_wrapper_value = 34;
+  google.protobuf.BytesValue bytes_wrapper_value = 35;
+
+  // Repeated well-known types
+  repeated google.protobuf.StringValue repeated_string_wrapper = 36;
+  repeated google.protobuf.Int32Value repeated_int32_wrapper = 37;
+  repeated google.protobuf.Timestamp repeated_timestamp = 38;
+
+  // Maps with well-known type values
+  map<string, google.protobuf.Int32Value> map_string_int32_wrapper = 39;
+  map<string, google.protobuf.StringValue> map_string_string_wrapper = 40;
+  map<string, google.protobuf.Timestamp> map_string_timestamp = 41;
+
+  // Geography and specialized types for testing
+  google.type.LatLng latlng_value = 42;
+  string geography_string = 43;
+  string duration_string = 44;
+  string interval_string = 45;
+
+  // Range types for testing - represent BigQuery RANGE<T> types
+  DateRange date_range = 46;
+  TimestampRange timestamp_range = 47;
+  DateTimeRange datetime_range = 48;
+
+  // Collections of well-known types and ranges for complex integration testing
+  repeated google.protobuf.Duration repeated_duration = 49;
+  repeated google.type.LatLng repeated_latlng = 50;
+  repeated DateRange repeated_date_range = 51;
+  repeated TimestampRange repeated_timestamp_range = 52;
+  repeated google.type.Date repeated_date = 59;
+  repeated google.type.DateTime repeated_datetime = 60;
+  repeated google.type.TimeOfDay repeated_timeofday = 61;
+
+  // Maps with well-known type and range values
+  map<string, google.protobuf.Duration> map_string_duration = 53;
+  map<string, google.type.LatLng> map_string_latlng = 54;
+  map<string, DateRange> map_string_date_range = 55;
+  map<string, google.type.Date> map_string_date = 62;
+  map<string, google.type.DateTime> map_string_datetime = 63;
+  map<string, google.type.TimeOfDay> map_string_timeofday = 64;
+}
+
+// Represents a BigQuery RANGE<DATE> type
+message DateRange {
+  string start = 1; // DATE in YYYY-MM-DD format, empty for unbounded
+  string end = 2; // DATE in YYYY-MM-DD format, empty for unbounded
+}
+
+// Represents a BigQuery RANGE<TIMESTAMP> type
+message TimestampRange {
+  google.protobuf.Timestamp start = 1; // null for unbounded
+  google.protobuf.Timestamp end = 2; // null for unbounded
+}
+
+// Represents a BigQuery RANGE<DATETIME> type
+message DateTimeRange {
+  string start = 1; // DATETIME in YYYY-MM-DD HH:MM:SS format, empty for unbounded
+  string end = 2; // DATETIME in YYYY-MM-DD HH:MM:SS format, empty for unbounded
+}
+
+// Nested message for testing purposes
+message NestedMessage {
+  string text = 1;
+  int32 number = 2;
+  bool flag = 3;
+  repeated string tags = 4;
+}
+
+// Test enum for the kitchen sink
+enum TestEnum {
+  TEST_ENUM_UNSPECIFIED = 0;
+  TEST_ENUM_VALUE_ONE = 1;
+  TEST_ENUM_VALUE_TWO = 2;
+}
