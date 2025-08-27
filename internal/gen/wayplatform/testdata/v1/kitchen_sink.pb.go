@@ -1904,15 +1904,16 @@ func (b0 DateTimeRange_builder) Build() *DateTimeRange {
 
 // Nested message for testing purposes
 type NestedMessage struct {
-	state                  protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Text        *string                `protobuf:"bytes,1,opt,name=text"`
-	xxx_hidden_Number      int32                  `protobuf:"varint,2,opt,name=number"`
-	xxx_hidden_Flag        bool                   `protobuf:"varint,3,opt,name=flag"`
-	xxx_hidden_Tags        []string               `protobuf:"bytes,4,rep,name=tags"`
-	XXX_raceDetectHookData protoimpl.RaceDetectHookData
-	XXX_presence           [1]uint32
-	unknownFields          protoimpl.UnknownFields
-	sizeCache              protoimpl.SizeCache
+	state                    protoimpl.MessageState        `protogen:"opaque.v1"`
+	xxx_hidden_Text          *string                       `protobuf:"bytes,1,opt,name=text"`
+	xxx_hidden_Number        int32                         `protobuf:"varint,2,opt,name=number"`
+	xxx_hidden_Flag          bool                          `protobuf:"varint,3,opt,name=flag"`
+	xxx_hidden_Tags          []string                      `protobuf:"bytes,4,rep,name=tags"`
+	xxx_hidden_OptionalValue isNestedMessage_OptionalValue `protobuf_oneof:"optional_value"`
+	XXX_raceDetectHookData   protoimpl.RaceDetectHookData
+	XXX_presence             [1]uint32
+	unknownFields            protoimpl.UnknownFields
+	sizeCache                protoimpl.SizeCache
 }
 
 func (x *NestedMessage) Reset() {
@@ -1971,23 +1972,96 @@ func (x *NestedMessage) GetTags() []string {
 	return nil
 }
 
+func (x *NestedMessage) GetStringOption() string {
+	if x != nil {
+		if x, ok := x.xxx_hidden_OptionalValue.(*nestedMessage_StringOption); ok {
+			return x.StringOption
+		}
+	}
+	return ""
+}
+
+func (x *NestedMessage) GetIntOption() int64 {
+	if x != nil {
+		if x, ok := x.xxx_hidden_OptionalValue.(*nestedMessage_IntOption); ok {
+			return x.IntOption
+		}
+	}
+	return 0
+}
+
+func (x *NestedMessage) GetBoolOption() bool {
+	if x != nil {
+		if x, ok := x.xxx_hidden_OptionalValue.(*nestedMessage_BoolOption); ok {
+			return x.BoolOption
+		}
+	}
+	return false
+}
+
+func (x *NestedMessage) GetTimestampOption() *timestamppb.Timestamp {
+	if x != nil {
+		if x, ok := x.xxx_hidden_OptionalValue.(*nestedMessage_TimestampOption); ok {
+			return x.TimestampOption
+		}
+	}
+	return nil
+}
+
+func (x *NestedMessage) GetComplexOption() *NestedMessage_ComplexValue {
+	if x != nil {
+		if x, ok := x.xxx_hidden_OptionalValue.(*nestedMessage_ComplexOption); ok {
+			return x.ComplexOption
+		}
+	}
+	return nil
+}
+
 func (x *NestedMessage) SetText(v string) {
 	x.xxx_hidden_Text = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 4)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 5)
 }
 
 func (x *NestedMessage) SetNumber(v int32) {
 	x.xxx_hidden_Number = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 4)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 5)
 }
 
 func (x *NestedMessage) SetFlag(v bool) {
 	x.xxx_hidden_Flag = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 4)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 5)
 }
 
 func (x *NestedMessage) SetTags(v []string) {
 	x.xxx_hidden_Tags = v
+}
+
+func (x *NestedMessage) SetStringOption(v string) {
+	x.xxx_hidden_OptionalValue = &nestedMessage_StringOption{v}
+}
+
+func (x *NestedMessage) SetIntOption(v int64) {
+	x.xxx_hidden_OptionalValue = &nestedMessage_IntOption{v}
+}
+
+func (x *NestedMessage) SetBoolOption(v bool) {
+	x.xxx_hidden_OptionalValue = &nestedMessage_BoolOption{v}
+}
+
+func (x *NestedMessage) SetTimestampOption(v *timestamppb.Timestamp) {
+	if v == nil {
+		x.xxx_hidden_OptionalValue = nil
+		return
+	}
+	x.xxx_hidden_OptionalValue = &nestedMessage_TimestampOption{v}
+}
+
+func (x *NestedMessage) SetComplexOption(v *NestedMessage_ComplexValue) {
+	if v == nil {
+		x.xxx_hidden_OptionalValue = nil
+		return
+	}
+	x.xxx_hidden_OptionalValue = &nestedMessage_ComplexOption{v}
 }
 
 func (x *NestedMessage) HasText() bool {
@@ -2011,6 +2085,53 @@ func (x *NestedMessage) HasFlag() bool {
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
 }
 
+func (x *NestedMessage) HasOptionalValue() bool {
+	if x == nil {
+		return false
+	}
+	return x.xxx_hidden_OptionalValue != nil
+}
+
+func (x *NestedMessage) HasStringOption() bool {
+	if x == nil {
+		return false
+	}
+	_, ok := x.xxx_hidden_OptionalValue.(*nestedMessage_StringOption)
+	return ok
+}
+
+func (x *NestedMessage) HasIntOption() bool {
+	if x == nil {
+		return false
+	}
+	_, ok := x.xxx_hidden_OptionalValue.(*nestedMessage_IntOption)
+	return ok
+}
+
+func (x *NestedMessage) HasBoolOption() bool {
+	if x == nil {
+		return false
+	}
+	_, ok := x.xxx_hidden_OptionalValue.(*nestedMessage_BoolOption)
+	return ok
+}
+
+func (x *NestedMessage) HasTimestampOption() bool {
+	if x == nil {
+		return false
+	}
+	_, ok := x.xxx_hidden_OptionalValue.(*nestedMessage_TimestampOption)
+	return ok
+}
+
+func (x *NestedMessage) HasComplexOption() bool {
+	if x == nil {
+		return false
+	}
+	_, ok := x.xxx_hidden_OptionalValue.(*nestedMessage_ComplexOption)
+	return ok
+}
+
 func (x *NestedMessage) ClearText() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
 	x.xxx_hidden_Text = nil
@@ -2026,6 +2147,67 @@ func (x *NestedMessage) ClearFlag() {
 	x.xxx_hidden_Flag = false
 }
 
+func (x *NestedMessage) ClearOptionalValue() {
+	x.xxx_hidden_OptionalValue = nil
+}
+
+func (x *NestedMessage) ClearStringOption() {
+	if _, ok := x.xxx_hidden_OptionalValue.(*nestedMessage_StringOption); ok {
+		x.xxx_hidden_OptionalValue = nil
+	}
+}
+
+func (x *NestedMessage) ClearIntOption() {
+	if _, ok := x.xxx_hidden_OptionalValue.(*nestedMessage_IntOption); ok {
+		x.xxx_hidden_OptionalValue = nil
+	}
+}
+
+func (x *NestedMessage) ClearBoolOption() {
+	if _, ok := x.xxx_hidden_OptionalValue.(*nestedMessage_BoolOption); ok {
+		x.xxx_hidden_OptionalValue = nil
+	}
+}
+
+func (x *NestedMessage) ClearTimestampOption() {
+	if _, ok := x.xxx_hidden_OptionalValue.(*nestedMessage_TimestampOption); ok {
+		x.xxx_hidden_OptionalValue = nil
+	}
+}
+
+func (x *NestedMessage) ClearComplexOption() {
+	if _, ok := x.xxx_hidden_OptionalValue.(*nestedMessage_ComplexOption); ok {
+		x.xxx_hidden_OptionalValue = nil
+	}
+}
+
+const NestedMessage_OptionalValue_not_set_case case_NestedMessage_OptionalValue = 0
+const NestedMessage_StringOption_case case_NestedMessage_OptionalValue = 5
+const NestedMessage_IntOption_case case_NestedMessage_OptionalValue = 6
+const NestedMessage_BoolOption_case case_NestedMessage_OptionalValue = 7
+const NestedMessage_TimestampOption_case case_NestedMessage_OptionalValue = 8
+const NestedMessage_ComplexOption_case case_NestedMessage_OptionalValue = 9
+
+func (x *NestedMessage) WhichOptionalValue() case_NestedMessage_OptionalValue {
+	if x == nil {
+		return NestedMessage_OptionalValue_not_set_case
+	}
+	switch x.xxx_hidden_OptionalValue.(type) {
+	case *nestedMessage_StringOption:
+		return NestedMessage_StringOption_case
+	case *nestedMessage_IntOption:
+		return NestedMessage_IntOption_case
+	case *nestedMessage_BoolOption:
+		return NestedMessage_BoolOption_case
+	case *nestedMessage_TimestampOption:
+		return NestedMessage_TimestampOption_case
+	case *nestedMessage_ComplexOption:
+		return NestedMessage_ComplexOption_case
+	default:
+		return NestedMessage_OptionalValue_not_set_case
+	}
+}
+
 type NestedMessage_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
@@ -2033,6 +2215,15 @@ type NestedMessage_builder struct {
 	Number *int32
 	Flag   *bool
 	Tags   []string
+	// Oneof field to test empty oneof scenarios in maps
+
+	// Fields of oneof xxx_hidden_OptionalValue:
+	StringOption    *string
+	IntOption       *int64
+	BoolOption      *bool
+	TimestampOption *timestamppb.Timestamp
+	ComplexOption   *NestedMessage_ComplexValue
+	// -- end of xxx_hidden_OptionalValue
 }
 
 func (b0 NestedMessage_builder) Build() *NestedMessage {
@@ -2040,18 +2231,195 @@ func (b0 NestedMessage_builder) Build() *NestedMessage {
 	b, x := &b0, m0
 	_, _ = b, x
 	if b.Text != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 4)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 5)
 		x.xxx_hidden_Text = b.Text
 	}
 	if b.Number != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 4)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 5)
 		x.xxx_hidden_Number = *b.Number
 	}
 	if b.Flag != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 4)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 5)
 		x.xxx_hidden_Flag = *b.Flag
 	}
 	x.xxx_hidden_Tags = b.Tags
+	if b.StringOption != nil {
+		x.xxx_hidden_OptionalValue = &nestedMessage_StringOption{*b.StringOption}
+	}
+	if b.IntOption != nil {
+		x.xxx_hidden_OptionalValue = &nestedMessage_IntOption{*b.IntOption}
+	}
+	if b.BoolOption != nil {
+		x.xxx_hidden_OptionalValue = &nestedMessage_BoolOption{*b.BoolOption}
+	}
+	if b.TimestampOption != nil {
+		x.xxx_hidden_OptionalValue = &nestedMessage_TimestampOption{b.TimestampOption}
+	}
+	if b.ComplexOption != nil {
+		x.xxx_hidden_OptionalValue = &nestedMessage_ComplexOption{b.ComplexOption}
+	}
+	return m0
+}
+
+type case_NestedMessage_OptionalValue protoreflect.FieldNumber
+
+func (x case_NestedMessage_OptionalValue) String() string {
+	md := file_wayplatform_testdata_v1_kitchen_sink_proto_msgTypes[4].Descriptor()
+	if x == 0 {
+		return "not set"
+	}
+	return protoimpl.X.MessageFieldStringOf(md, protoreflect.FieldNumber(x))
+}
+
+type isNestedMessage_OptionalValue interface {
+	isNestedMessage_OptionalValue()
+}
+
+type nestedMessage_StringOption struct {
+	StringOption string `protobuf:"bytes,5,opt,name=string_option,json=stringOption,oneof"`
+}
+
+type nestedMessage_IntOption struct {
+	IntOption int64 `protobuf:"varint,6,opt,name=int_option,json=intOption,oneof"`
+}
+
+type nestedMessage_BoolOption struct {
+	BoolOption bool `protobuf:"varint,7,opt,name=bool_option,json=boolOption,oneof"`
+}
+
+type nestedMessage_TimestampOption struct {
+	TimestampOption *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=timestamp_option,json=timestampOption,oneof"`
+}
+
+type nestedMessage_ComplexOption struct {
+	ComplexOption *NestedMessage_ComplexValue `protobuf:"bytes,9,opt,name=complex_option,json=complexOption,oneof"`
+}
+
+func (*nestedMessage_StringOption) isNestedMessage_OptionalValue() {}
+
+func (*nestedMessage_IntOption) isNestedMessage_OptionalValue() {}
+
+func (*nestedMessage_BoolOption) isNestedMessage_OptionalValue() {}
+
+func (*nestedMessage_TimestampOption) isNestedMessage_OptionalValue() {}
+
+func (*nestedMessage_ComplexOption) isNestedMessage_OptionalValue() {}
+
+// Complex nested message for testing map scenarios
+type NestedMessage_ComplexValue struct {
+	state                  protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_DeviceId    *string                `protobuf:"bytes,1,opt,name=device_id,json=deviceId"`
+	xxx_hidden_Labels      []string               `protobuf:"bytes,2,rep,name=labels"`
+	xxx_hidden_LastSeen    *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=last_seen,json=lastSeen"`
+	XXX_raceDetectHookData protoimpl.RaceDetectHookData
+	XXX_presence           [1]uint32
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
+}
+
+func (x *NestedMessage_ComplexValue) Reset() {
+	*x = NestedMessage_ComplexValue{}
+	mi := &file_wayplatform_testdata_v1_kitchen_sink_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NestedMessage_ComplexValue) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NestedMessage_ComplexValue) ProtoMessage() {}
+
+func (x *NestedMessage_ComplexValue) ProtoReflect() protoreflect.Message {
+	mi := &file_wayplatform_testdata_v1_kitchen_sink_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+func (x *NestedMessage_ComplexValue) GetDeviceId() string {
+	if x != nil {
+		if x.xxx_hidden_DeviceId != nil {
+			return *x.xxx_hidden_DeviceId
+		}
+		return ""
+	}
+	return ""
+}
+
+func (x *NestedMessage_ComplexValue) GetLabels() []string {
+	if x != nil {
+		return x.xxx_hidden_Labels
+	}
+	return nil
+}
+
+func (x *NestedMessage_ComplexValue) GetLastSeen() *timestamppb.Timestamp {
+	if x != nil {
+		return x.xxx_hidden_LastSeen
+	}
+	return nil
+}
+
+func (x *NestedMessage_ComplexValue) SetDeviceId(v string) {
+	x.xxx_hidden_DeviceId = &v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 3)
+}
+
+func (x *NestedMessage_ComplexValue) SetLabels(v []string) {
+	x.xxx_hidden_Labels = v
+}
+
+func (x *NestedMessage_ComplexValue) SetLastSeen(v *timestamppb.Timestamp) {
+	x.xxx_hidden_LastSeen = v
+}
+
+func (x *NestedMessage_ComplexValue) HasDeviceId() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
+}
+
+func (x *NestedMessage_ComplexValue) HasLastSeen() bool {
+	if x == nil {
+		return false
+	}
+	return x.xxx_hidden_LastSeen != nil
+}
+
+func (x *NestedMessage_ComplexValue) ClearDeviceId() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
+	x.xxx_hidden_DeviceId = nil
+}
+
+func (x *NestedMessage_ComplexValue) ClearLastSeen() {
+	x.xxx_hidden_LastSeen = nil
+}
+
+type NestedMessage_ComplexValue_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	DeviceId *string
+	Labels   []string
+	LastSeen *timestamppb.Timestamp
+}
+
+func (b0 NestedMessage_ComplexValue_builder) Build() *NestedMessage_ComplexValue {
+	m0 := &NestedMessage_ComplexValue{}
+	b, x := &b0, m0
+	_, _ = b, x
+	if b.DeviceId != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 3)
+		x.xxx_hidden_DeviceId = b.DeviceId
+	}
+	x.xxx_hidden_Labels = b.Labels
+	x.xxx_hidden_LastSeen = b.LastSeen
 	return m0
 }
 
@@ -2181,12 +2549,24 @@ const file_wayplatform_testdata_v1_kitchen_sink_proto_rawDesc = "" +
 	"\x03end\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\x03end\"7\n" +
 	"\rDateTimeRange\x12\x14\n" +
 	"\x05start\x18\x01 \x01(\tR\x05start\x12\x10\n" +
-	"\x03end\x18\x02 \x01(\tR\x03end\"c\n" +
+	"\x03end\x18\x02 \x01(\tR\x03end\"\x85\x04\n" +
 	"\rNestedMessage\x12\x12\n" +
 	"\x04text\x18\x01 \x01(\tR\x04text\x12\x16\n" +
 	"\x06number\x18\x02 \x01(\x05R\x06number\x12\x12\n" +
 	"\x04flag\x18\x03 \x01(\bR\x04flag\x12\x12\n" +
-	"\x04tags\x18\x04 \x03(\tR\x04tags*W\n" +
+	"\x04tags\x18\x04 \x03(\tR\x04tags\x12%\n" +
+	"\rstring_option\x18\x05 \x01(\tH\x00R\fstringOption\x12\x1f\n" +
+	"\n" +
+	"int_option\x18\x06 \x01(\x03H\x00R\tintOption\x12!\n" +
+	"\vbool_option\x18\a \x01(\bH\x00R\n" +
+	"boolOption\x12G\n" +
+	"\x10timestamp_option\x18\b \x01(\v2\x1a.google.protobuf.TimestampH\x00R\x0ftimestampOption\x12\\\n" +
+	"\x0ecomplex_option\x18\t \x01(\v23.wayplatform.testdata.v1.NestedMessage.ComplexValueH\x00R\rcomplexOption\x1a|\n" +
+	"\fComplexValue\x12\x1b\n" +
+	"\tdevice_id\x18\x01 \x01(\tR\bdeviceId\x12\x16\n" +
+	"\x06labels\x18\x02 \x03(\tR\x06labels\x127\n" +
+	"\tlast_seen\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\blastSeenB\x10\n" +
+	"\x0eoptional_value*W\n" +
 	"\bTestEnum\x12\x19\n" +
 	"\x15TEST_ENUM_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13TEST_ENUM_VALUE_ONE\x10\x01\x12\x17\n" +
@@ -2194,42 +2574,43 @@ const file_wayplatform_testdata_v1_kitchen_sink_proto_rawDesc = "" +
 	"\x1bcom.wayplatform.testdata.v1B\x10KitchenSinkProtoP\x01ZRgithub.com/way-platform/protobg-go/internal/gen/wayplatform/testdata/v1;testdatav1\xa2\x02\x03WTX\xaa\x02\x17Wayplatform.Testdata.V1\xca\x02\x17Wayplatform\\Testdata\\V1\xe2\x02#Wayplatform\\Testdata\\V1\\GPBMetadata\xea\x02\x19Wayplatform::Testdata::V1b\beditionsp\xe8\a"
 
 var file_wayplatform_testdata_v1_kitchen_sink_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_wayplatform_testdata_v1_kitchen_sink_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_wayplatform_testdata_v1_kitchen_sink_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
 var file_wayplatform_testdata_v1_kitchen_sink_proto_goTypes = []any{
-	(TestEnum)(0),                  // 0: wayplatform.testdata.v1.TestEnum
-	(*KitchenSink)(nil),            // 1: wayplatform.testdata.v1.KitchenSink
-	(*DateRange)(nil),              // 2: wayplatform.testdata.v1.DateRange
-	(*TimestampRange)(nil),         // 3: wayplatform.testdata.v1.TimestampRange
-	(*DateTimeRange)(nil),          // 4: wayplatform.testdata.v1.DateTimeRange
-	(*NestedMessage)(nil),          // 5: wayplatform.testdata.v1.NestedMessage
-	nil,                            // 6: wayplatform.testdata.v1.KitchenSink.MapStringStringEntry
-	nil,                            // 7: wayplatform.testdata.v1.KitchenSink.MapStringInt32Entry
-	nil,                            // 8: wayplatform.testdata.v1.KitchenSink.MapInt32StringEntry
-	nil,                            // 9: wayplatform.testdata.v1.KitchenSink.MapStringNestedEntry
-	nil,                            // 10: wayplatform.testdata.v1.KitchenSink.MapStringInt32WrapperEntry
-	nil,                            // 11: wayplatform.testdata.v1.KitchenSink.MapStringStringWrapperEntry
-	nil,                            // 12: wayplatform.testdata.v1.KitchenSink.MapStringTimestampEntry
-	nil,                            // 13: wayplatform.testdata.v1.KitchenSink.MapStringDurationEntry
-	nil,                            // 14: wayplatform.testdata.v1.KitchenSink.MapStringLatlngEntry
-	nil,                            // 15: wayplatform.testdata.v1.KitchenSink.MapStringDateRangeEntry
-	nil,                            // 16: wayplatform.testdata.v1.KitchenSink.MapStringDateEntry
-	nil,                            // 17: wayplatform.testdata.v1.KitchenSink.MapStringDatetimeEntry
-	nil,                            // 18: wayplatform.testdata.v1.KitchenSink.MapStringTimeofdayEntry
-	(*timestamppb.Timestamp)(nil),  // 19: google.protobuf.Timestamp
-	(*durationpb.Duration)(nil),    // 20: google.protobuf.Duration
-	(*date.Date)(nil),              // 21: google.type.Date
-	(*datetime.DateTime)(nil),      // 22: google.type.DateTime
-	(*timeofday.TimeOfDay)(nil),    // 23: google.type.TimeOfDay
-	(*wrapperspb.StringValue)(nil), // 24: google.protobuf.StringValue
-	(*wrapperspb.Int32Value)(nil),  // 25: google.protobuf.Int32Value
-	(*wrapperspb.Int64Value)(nil),  // 26: google.protobuf.Int64Value
-	(*wrapperspb.UInt32Value)(nil), // 27: google.protobuf.UInt32Value
-	(*wrapperspb.UInt64Value)(nil), // 28: google.protobuf.UInt64Value
-	(*wrapperspb.BoolValue)(nil),   // 29: google.protobuf.BoolValue
-	(*wrapperspb.FloatValue)(nil),  // 30: google.protobuf.FloatValue
-	(*wrapperspb.DoubleValue)(nil), // 31: google.protobuf.DoubleValue
-	(*wrapperspb.BytesValue)(nil),  // 32: google.protobuf.BytesValue
-	(*latlng.LatLng)(nil),          // 33: google.type.LatLng
+	(TestEnum)(0),                      // 0: wayplatform.testdata.v1.TestEnum
+	(*KitchenSink)(nil),                // 1: wayplatform.testdata.v1.KitchenSink
+	(*DateRange)(nil),                  // 2: wayplatform.testdata.v1.DateRange
+	(*TimestampRange)(nil),             // 3: wayplatform.testdata.v1.TimestampRange
+	(*DateTimeRange)(nil),              // 4: wayplatform.testdata.v1.DateTimeRange
+	(*NestedMessage)(nil),              // 5: wayplatform.testdata.v1.NestedMessage
+	nil,                                // 6: wayplatform.testdata.v1.KitchenSink.MapStringStringEntry
+	nil,                                // 7: wayplatform.testdata.v1.KitchenSink.MapStringInt32Entry
+	nil,                                // 8: wayplatform.testdata.v1.KitchenSink.MapInt32StringEntry
+	nil,                                // 9: wayplatform.testdata.v1.KitchenSink.MapStringNestedEntry
+	nil,                                // 10: wayplatform.testdata.v1.KitchenSink.MapStringInt32WrapperEntry
+	nil,                                // 11: wayplatform.testdata.v1.KitchenSink.MapStringStringWrapperEntry
+	nil,                                // 12: wayplatform.testdata.v1.KitchenSink.MapStringTimestampEntry
+	nil,                                // 13: wayplatform.testdata.v1.KitchenSink.MapStringDurationEntry
+	nil,                                // 14: wayplatform.testdata.v1.KitchenSink.MapStringLatlngEntry
+	nil,                                // 15: wayplatform.testdata.v1.KitchenSink.MapStringDateRangeEntry
+	nil,                                // 16: wayplatform.testdata.v1.KitchenSink.MapStringDateEntry
+	nil,                                // 17: wayplatform.testdata.v1.KitchenSink.MapStringDatetimeEntry
+	nil,                                // 18: wayplatform.testdata.v1.KitchenSink.MapStringTimeofdayEntry
+	(*NestedMessage_ComplexValue)(nil), // 19: wayplatform.testdata.v1.NestedMessage.ComplexValue
+	(*timestamppb.Timestamp)(nil),      // 20: google.protobuf.Timestamp
+	(*durationpb.Duration)(nil),        // 21: google.protobuf.Duration
+	(*date.Date)(nil),                  // 22: google.type.Date
+	(*datetime.DateTime)(nil),          // 23: google.type.DateTime
+	(*timeofday.TimeOfDay)(nil),        // 24: google.type.TimeOfDay
+	(*wrapperspb.StringValue)(nil),     // 25: google.protobuf.StringValue
+	(*wrapperspb.Int32Value)(nil),      // 26: google.protobuf.Int32Value
+	(*wrapperspb.Int64Value)(nil),      // 27: google.protobuf.Int64Value
+	(*wrapperspb.UInt32Value)(nil),     // 28: google.protobuf.UInt32Value
+	(*wrapperspb.UInt64Value)(nil),     // 29: google.protobuf.UInt64Value
+	(*wrapperspb.BoolValue)(nil),       // 30: google.protobuf.BoolValue
+	(*wrapperspb.FloatValue)(nil),      // 31: google.protobuf.FloatValue
+	(*wrapperspb.DoubleValue)(nil),     // 32: google.protobuf.DoubleValue
+	(*wrapperspb.BytesValue)(nil),      // 33: google.protobuf.BytesValue
+	(*latlng.LatLng)(nil),              // 34: google.type.LatLng
 }
 var file_wayplatform_testdata_v1_kitchen_sink_proto_depIdxs = []int32{
 	0,  // 0: wayplatform.testdata.v1.KitchenSink.enum_value:type_name -> wayplatform.testdata.v1.TestEnum
@@ -2239,60 +2620,63 @@ var file_wayplatform_testdata_v1_kitchen_sink_proto_depIdxs = []int32{
 	7,  // 4: wayplatform.testdata.v1.KitchenSink.map_string_int32:type_name -> wayplatform.testdata.v1.KitchenSink.MapStringInt32Entry
 	8,  // 5: wayplatform.testdata.v1.KitchenSink.map_int32_string:type_name -> wayplatform.testdata.v1.KitchenSink.MapInt32StringEntry
 	9,  // 6: wayplatform.testdata.v1.KitchenSink.map_string_nested:type_name -> wayplatform.testdata.v1.KitchenSink.MapStringNestedEntry
-	19, // 7: wayplatform.testdata.v1.KitchenSink.timestamp_value:type_name -> google.protobuf.Timestamp
-	20, // 8: wayplatform.testdata.v1.KitchenSink.duration_value:type_name -> google.protobuf.Duration
-	21, // 9: wayplatform.testdata.v1.KitchenSink.date_value:type_name -> google.type.Date
-	22, // 10: wayplatform.testdata.v1.KitchenSink.datetime_value:type_name -> google.type.DateTime
-	23, // 11: wayplatform.testdata.v1.KitchenSink.timeofday_value:type_name -> google.type.TimeOfDay
-	24, // 12: wayplatform.testdata.v1.KitchenSink.string_wrapper_value:type_name -> google.protobuf.StringValue
-	25, // 13: wayplatform.testdata.v1.KitchenSink.int32_wrapper_value:type_name -> google.protobuf.Int32Value
-	26, // 14: wayplatform.testdata.v1.KitchenSink.int64_wrapper_value:type_name -> google.protobuf.Int64Value
-	27, // 15: wayplatform.testdata.v1.KitchenSink.uint32_wrapper_value:type_name -> google.protobuf.UInt32Value
-	28, // 16: wayplatform.testdata.v1.KitchenSink.uint64_wrapper_value:type_name -> google.protobuf.UInt64Value
-	29, // 17: wayplatform.testdata.v1.KitchenSink.bool_wrapper_value:type_name -> google.protobuf.BoolValue
-	30, // 18: wayplatform.testdata.v1.KitchenSink.float_wrapper_value:type_name -> google.protobuf.FloatValue
-	31, // 19: wayplatform.testdata.v1.KitchenSink.double_wrapper_value:type_name -> google.protobuf.DoubleValue
-	32, // 20: wayplatform.testdata.v1.KitchenSink.bytes_wrapper_value:type_name -> google.protobuf.BytesValue
-	24, // 21: wayplatform.testdata.v1.KitchenSink.repeated_string_wrapper:type_name -> google.protobuf.StringValue
-	25, // 22: wayplatform.testdata.v1.KitchenSink.repeated_int32_wrapper:type_name -> google.protobuf.Int32Value
-	19, // 23: wayplatform.testdata.v1.KitchenSink.repeated_timestamp:type_name -> google.protobuf.Timestamp
+	20, // 7: wayplatform.testdata.v1.KitchenSink.timestamp_value:type_name -> google.protobuf.Timestamp
+	21, // 8: wayplatform.testdata.v1.KitchenSink.duration_value:type_name -> google.protobuf.Duration
+	22, // 9: wayplatform.testdata.v1.KitchenSink.date_value:type_name -> google.type.Date
+	23, // 10: wayplatform.testdata.v1.KitchenSink.datetime_value:type_name -> google.type.DateTime
+	24, // 11: wayplatform.testdata.v1.KitchenSink.timeofday_value:type_name -> google.type.TimeOfDay
+	25, // 12: wayplatform.testdata.v1.KitchenSink.string_wrapper_value:type_name -> google.protobuf.StringValue
+	26, // 13: wayplatform.testdata.v1.KitchenSink.int32_wrapper_value:type_name -> google.protobuf.Int32Value
+	27, // 14: wayplatform.testdata.v1.KitchenSink.int64_wrapper_value:type_name -> google.protobuf.Int64Value
+	28, // 15: wayplatform.testdata.v1.KitchenSink.uint32_wrapper_value:type_name -> google.protobuf.UInt32Value
+	29, // 16: wayplatform.testdata.v1.KitchenSink.uint64_wrapper_value:type_name -> google.protobuf.UInt64Value
+	30, // 17: wayplatform.testdata.v1.KitchenSink.bool_wrapper_value:type_name -> google.protobuf.BoolValue
+	31, // 18: wayplatform.testdata.v1.KitchenSink.float_wrapper_value:type_name -> google.protobuf.FloatValue
+	32, // 19: wayplatform.testdata.v1.KitchenSink.double_wrapper_value:type_name -> google.protobuf.DoubleValue
+	33, // 20: wayplatform.testdata.v1.KitchenSink.bytes_wrapper_value:type_name -> google.protobuf.BytesValue
+	25, // 21: wayplatform.testdata.v1.KitchenSink.repeated_string_wrapper:type_name -> google.protobuf.StringValue
+	26, // 22: wayplatform.testdata.v1.KitchenSink.repeated_int32_wrapper:type_name -> google.protobuf.Int32Value
+	20, // 23: wayplatform.testdata.v1.KitchenSink.repeated_timestamp:type_name -> google.protobuf.Timestamp
 	10, // 24: wayplatform.testdata.v1.KitchenSink.map_string_int32_wrapper:type_name -> wayplatform.testdata.v1.KitchenSink.MapStringInt32WrapperEntry
 	11, // 25: wayplatform.testdata.v1.KitchenSink.map_string_string_wrapper:type_name -> wayplatform.testdata.v1.KitchenSink.MapStringStringWrapperEntry
 	12, // 26: wayplatform.testdata.v1.KitchenSink.map_string_timestamp:type_name -> wayplatform.testdata.v1.KitchenSink.MapStringTimestampEntry
-	33, // 27: wayplatform.testdata.v1.KitchenSink.latlng_value:type_name -> google.type.LatLng
+	34, // 27: wayplatform.testdata.v1.KitchenSink.latlng_value:type_name -> google.type.LatLng
 	2,  // 28: wayplatform.testdata.v1.KitchenSink.date_range:type_name -> wayplatform.testdata.v1.DateRange
 	3,  // 29: wayplatform.testdata.v1.KitchenSink.timestamp_range:type_name -> wayplatform.testdata.v1.TimestampRange
 	4,  // 30: wayplatform.testdata.v1.KitchenSink.datetime_range:type_name -> wayplatform.testdata.v1.DateTimeRange
-	20, // 31: wayplatform.testdata.v1.KitchenSink.repeated_duration:type_name -> google.protobuf.Duration
-	33, // 32: wayplatform.testdata.v1.KitchenSink.repeated_latlng:type_name -> google.type.LatLng
+	21, // 31: wayplatform.testdata.v1.KitchenSink.repeated_duration:type_name -> google.protobuf.Duration
+	34, // 32: wayplatform.testdata.v1.KitchenSink.repeated_latlng:type_name -> google.type.LatLng
 	2,  // 33: wayplatform.testdata.v1.KitchenSink.repeated_date_range:type_name -> wayplatform.testdata.v1.DateRange
 	3,  // 34: wayplatform.testdata.v1.KitchenSink.repeated_timestamp_range:type_name -> wayplatform.testdata.v1.TimestampRange
-	21, // 35: wayplatform.testdata.v1.KitchenSink.repeated_date:type_name -> google.type.Date
-	22, // 36: wayplatform.testdata.v1.KitchenSink.repeated_datetime:type_name -> google.type.DateTime
-	23, // 37: wayplatform.testdata.v1.KitchenSink.repeated_timeofday:type_name -> google.type.TimeOfDay
+	22, // 35: wayplatform.testdata.v1.KitchenSink.repeated_date:type_name -> google.type.Date
+	23, // 36: wayplatform.testdata.v1.KitchenSink.repeated_datetime:type_name -> google.type.DateTime
+	24, // 37: wayplatform.testdata.v1.KitchenSink.repeated_timeofday:type_name -> google.type.TimeOfDay
 	13, // 38: wayplatform.testdata.v1.KitchenSink.map_string_duration:type_name -> wayplatform.testdata.v1.KitchenSink.MapStringDurationEntry
 	14, // 39: wayplatform.testdata.v1.KitchenSink.map_string_latlng:type_name -> wayplatform.testdata.v1.KitchenSink.MapStringLatlngEntry
 	15, // 40: wayplatform.testdata.v1.KitchenSink.map_string_date_range:type_name -> wayplatform.testdata.v1.KitchenSink.MapStringDateRangeEntry
 	16, // 41: wayplatform.testdata.v1.KitchenSink.map_string_date:type_name -> wayplatform.testdata.v1.KitchenSink.MapStringDateEntry
 	17, // 42: wayplatform.testdata.v1.KitchenSink.map_string_datetime:type_name -> wayplatform.testdata.v1.KitchenSink.MapStringDatetimeEntry
 	18, // 43: wayplatform.testdata.v1.KitchenSink.map_string_timeofday:type_name -> wayplatform.testdata.v1.KitchenSink.MapStringTimeofdayEntry
-	19, // 44: wayplatform.testdata.v1.TimestampRange.start:type_name -> google.protobuf.Timestamp
-	19, // 45: wayplatform.testdata.v1.TimestampRange.end:type_name -> google.protobuf.Timestamp
-	5,  // 46: wayplatform.testdata.v1.KitchenSink.MapStringNestedEntry.value:type_name -> wayplatform.testdata.v1.NestedMessage
-	25, // 47: wayplatform.testdata.v1.KitchenSink.MapStringInt32WrapperEntry.value:type_name -> google.protobuf.Int32Value
-	24, // 48: wayplatform.testdata.v1.KitchenSink.MapStringStringWrapperEntry.value:type_name -> google.protobuf.StringValue
-	19, // 49: wayplatform.testdata.v1.KitchenSink.MapStringTimestampEntry.value:type_name -> google.protobuf.Timestamp
-	20, // 50: wayplatform.testdata.v1.KitchenSink.MapStringDurationEntry.value:type_name -> google.protobuf.Duration
-	33, // 51: wayplatform.testdata.v1.KitchenSink.MapStringLatlngEntry.value:type_name -> google.type.LatLng
-	2,  // 52: wayplatform.testdata.v1.KitchenSink.MapStringDateRangeEntry.value:type_name -> wayplatform.testdata.v1.DateRange
-	21, // 53: wayplatform.testdata.v1.KitchenSink.MapStringDateEntry.value:type_name -> google.type.Date
-	22, // 54: wayplatform.testdata.v1.KitchenSink.MapStringDatetimeEntry.value:type_name -> google.type.DateTime
-	23, // 55: wayplatform.testdata.v1.KitchenSink.MapStringTimeofdayEntry.value:type_name -> google.type.TimeOfDay
-	56, // [56:56] is the sub-list for method output_type
-	56, // [56:56] is the sub-list for method input_type
-	56, // [56:56] is the sub-list for extension type_name
-	56, // [56:56] is the sub-list for extension extendee
-	0,  // [0:56] is the sub-list for field type_name
+	20, // 44: wayplatform.testdata.v1.TimestampRange.start:type_name -> google.protobuf.Timestamp
+	20, // 45: wayplatform.testdata.v1.TimestampRange.end:type_name -> google.protobuf.Timestamp
+	20, // 46: wayplatform.testdata.v1.NestedMessage.timestamp_option:type_name -> google.protobuf.Timestamp
+	19, // 47: wayplatform.testdata.v1.NestedMessage.complex_option:type_name -> wayplatform.testdata.v1.NestedMessage.ComplexValue
+	5,  // 48: wayplatform.testdata.v1.KitchenSink.MapStringNestedEntry.value:type_name -> wayplatform.testdata.v1.NestedMessage
+	26, // 49: wayplatform.testdata.v1.KitchenSink.MapStringInt32WrapperEntry.value:type_name -> google.protobuf.Int32Value
+	25, // 50: wayplatform.testdata.v1.KitchenSink.MapStringStringWrapperEntry.value:type_name -> google.protobuf.StringValue
+	20, // 51: wayplatform.testdata.v1.KitchenSink.MapStringTimestampEntry.value:type_name -> google.protobuf.Timestamp
+	21, // 52: wayplatform.testdata.v1.KitchenSink.MapStringDurationEntry.value:type_name -> google.protobuf.Duration
+	34, // 53: wayplatform.testdata.v1.KitchenSink.MapStringLatlngEntry.value:type_name -> google.type.LatLng
+	2,  // 54: wayplatform.testdata.v1.KitchenSink.MapStringDateRangeEntry.value:type_name -> wayplatform.testdata.v1.DateRange
+	22, // 55: wayplatform.testdata.v1.KitchenSink.MapStringDateEntry.value:type_name -> google.type.Date
+	23, // 56: wayplatform.testdata.v1.KitchenSink.MapStringDatetimeEntry.value:type_name -> google.type.DateTime
+	24, // 57: wayplatform.testdata.v1.KitchenSink.MapStringTimeofdayEntry.value:type_name -> google.type.TimeOfDay
+	20, // 58: wayplatform.testdata.v1.NestedMessage.ComplexValue.last_seen:type_name -> google.protobuf.Timestamp
+	59, // [59:59] is the sub-list for method output_type
+	59, // [59:59] is the sub-list for method input_type
+	59, // [59:59] is the sub-list for extension type_name
+	59, // [59:59] is the sub-list for extension extendee
+	0,  // [0:59] is the sub-list for field type_name
 }
 
 func init() { file_wayplatform_testdata_v1_kitchen_sink_proto_init() }
@@ -2300,13 +2684,20 @@ func file_wayplatform_testdata_v1_kitchen_sink_proto_init() {
 	if File_wayplatform_testdata_v1_kitchen_sink_proto != nil {
 		return
 	}
+	file_wayplatform_testdata_v1_kitchen_sink_proto_msgTypes[4].OneofWrappers = []any{
+		(*nestedMessage_StringOption)(nil),
+		(*nestedMessage_IntOption)(nil),
+		(*nestedMessage_BoolOption)(nil),
+		(*nestedMessage_TimestampOption)(nil),
+		(*nestedMessage_ComplexOption)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_wayplatform_testdata_v1_kitchen_sink_proto_rawDesc), len(file_wayplatform_testdata_v1_kitchen_sink_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   18,
+			NumMessages:   19,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

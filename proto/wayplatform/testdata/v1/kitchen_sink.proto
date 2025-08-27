@@ -137,6 +137,22 @@ message NestedMessage {
   int32 number = 2;
   bool flag = 3;
   repeated string tags = 4;
+
+  // Oneof field to test empty oneof scenarios in maps
+  oneof optional_value {
+    string string_option = 5;
+    int64 int_option = 6;
+    bool bool_option = 7;
+    google.protobuf.Timestamp timestamp_option = 8;
+    ComplexValue complex_option = 9;
+  }
+
+  // Complex nested message for testing map scenarios
+  message ComplexValue {
+    string device_id = 1;
+    repeated string labels = 2;
+    google.protobuf.Timestamp last_seen = 3;
+  }
 }
 
 // Test enum for the kitchen sink

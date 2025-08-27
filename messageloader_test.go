@@ -2173,6 +2173,202 @@ func TestMessageLoader(t *testing.T) {
 					},
 					expectedError: "unsupported BigQuery value for message",
 				},
+
+				{
+					name: "Map field with empty map entry - should skip gracefully",
+					messageLoader: MessageLoader{
+						Message: &testdatav1.KitchenSink{},
+					},
+					row: []bigquery.Value{
+						[]bigquery.Value{
+							map[string]bigquery.Value{}, // Empty map entry should be handled gracefully
+							map[string]bigquery.Value{ // Valid entry after empty one
+								"key":   "valid_key",
+								"value": []bigquery.Value{"valid text", int64(42), true, []bigquery.Value{"tag1", "tag2"}},
+							},
+						},
+					},
+					schema: bigquery.Schema{
+						&bigquery.FieldSchema{
+							Name:     "map_string_nested",
+							Type:     bigquery.RecordFieldType,
+							Repeated: true,
+							Schema: bigquery.Schema{
+								&bigquery.FieldSchema{Name: "key", Type: bigquery.StringFieldType},
+								&bigquery.FieldSchema{
+									Name: "value",
+									Type: bigquery.RecordFieldType,
+									Schema: bigquery.Schema{
+										&bigquery.FieldSchema{Name: "text", Type: bigquery.StringFieldType},
+										&bigquery.FieldSchema{Name: "number", Type: bigquery.IntegerFieldType},
+										&bigquery.FieldSchema{Name: "flag", Type: bigquery.BooleanFieldType},
+										&bigquery.FieldSchema{Name: "tags", Type: bigquery.StringFieldType, Repeated: true},
+									},
+								},
+							},
+						},
+					},
+					expected: func() proto.Message {
+						result := &testdatav1.KitchenSink{}
+						nestedMsg := &testdatav1.NestedMessage{}
+						nestedMsg.SetText("valid text")
+						nestedMsg.SetNumber(42)
+						nestedMsg.SetFlag(true)
+						nestedMsg.SetTags([]string{"tag1", "tag2"})
+						mapData := map[string]*testdatav1.NestedMessage{
+							"valid_key": nestedMsg,
+						}
+						result.SetMapStringNested(mapData)
+						return result
+					},
+				},
+
+				{
+					name: "Map field with array-format entry (BigQuery REPEATED RECORD style)",
+					messageLoader: MessageLoader{
+						Message: &testdatav1.KitchenSink{},
+					},
+					row: []bigquery.Value{
+						[]bigquery.Value{
+							// Array format: [key, value] instead of {"key": key, "value": value}
+							[]bigquery.Value{"modem_utc", []bigquery.Value{"device_text", int64(123), true, []bigquery.Value{"tag1", "tag2"}}},
+							[]bigquery.Value{"sensor_data", []bigquery.Value{"sensor_text", int64(456), false, []bigquery.Value{"tag3"}}},
+						},
+					},
+					schema: bigquery.Schema{
+						&bigquery.FieldSchema{
+							Name:     "map_string_nested",
+							Type:     bigquery.RecordFieldType,
+							Repeated: true,
+							Schema: bigquery.Schema{
+								&bigquery.FieldSchema{Name: "key", Type: bigquery.StringFieldType},
+								&bigquery.FieldSchema{
+									Name: "value",
+									Type: bigquery.RecordFieldType,
+									Schema: bigquery.Schema{
+										&bigquery.FieldSchema{Name: "text", Type: bigquery.StringFieldType},
+										&bigquery.FieldSchema{Name: "number", Type: bigquery.IntegerFieldType},
+										&bigquery.FieldSchema{Name: "flag", Type: bigquery.BooleanFieldType},
+										&bigquery.FieldSchema{Name: "tags", Type: bigquery.StringFieldType, Repeated: true},
+									},
+								},
+							},
+						},
+					},
+					expected: func() proto.Message {
+						result := &testdatav1.KitchenSink{}
+						nested1 := &testdatav1.NestedMessage{}
+						nested1.SetText("device_text")
+						nested1.SetNumber(123)
+						nested1.SetFlag(true)
+						nested1.SetTags([]string{"tag1", "tag2"})
+
+						nested2 := &testdatav1.NestedMessage{}
+						nested2.SetText("sensor_text")
+						nested2.SetNumber(456)
+						nested2.SetFlag(false)
+						nested2.SetTags([]string{"tag3"})
+
+						mapData := map[string]*testdatav1.NestedMessage{
+							"modem_utc":   nested1,
+							"sensor_data": nested2,
+						}
+						result.SetMapStringNested(mapData)
+						return result
+					},
+				},
+
+				{
+					name: "Map field with mixed array and map format entries",
+					messageLoader: MessageLoader{
+						Message: &testdatav1.KitchenSink{},
+					},
+					row: []bigquery.Value{
+						[]bigquery.Value{
+							// Map format entry
+							map[string]bigquery.Value{
+								"key":   "map_style",
+								"value": []bigquery.Value{"map text", int64(100), true, []bigquery.Value{}},
+							},
+							// Array format entry
+							[]bigquery.Value{"array_style", []bigquery.Value{"array text", int64(200), false, []bigquery.Value{"array_tag"}}},
+						},
+					},
+					schema: bigquery.Schema{
+						&bigquery.FieldSchema{
+							Name:     "map_string_nested",
+							Type:     bigquery.RecordFieldType,
+							Repeated: true,
+							Schema: bigquery.Schema{
+								&bigquery.FieldSchema{Name: "key", Type: bigquery.StringFieldType},
+								&bigquery.FieldSchema{
+									Name: "value",
+									Type: bigquery.RecordFieldType,
+									Schema: bigquery.Schema{
+										&bigquery.FieldSchema{Name: "text", Type: bigquery.StringFieldType},
+										&bigquery.FieldSchema{Name: "number", Type: bigquery.IntegerFieldType},
+										&bigquery.FieldSchema{Name: "flag", Type: bigquery.BooleanFieldType},
+										&bigquery.FieldSchema{Name: "tags", Type: bigquery.StringFieldType, Repeated: true},
+									},
+								},
+							},
+						},
+					},
+					expected: func() proto.Message {
+						result := &testdatav1.KitchenSink{}
+						nested1 := &testdatav1.NestedMessage{}
+						nested1.SetText("map text")
+						nested1.SetNumber(100)
+						nested1.SetFlag(true)
+						nested1.SetTags([]string{})
+
+						nested2 := &testdatav1.NestedMessage{}
+						nested2.SetText("array text")
+						nested2.SetNumber(200)
+						nested2.SetFlag(false)
+						nested2.SetTags([]string{"array_tag"})
+
+						mapData := map[string]*testdatav1.NestedMessage{
+							"map_style":   nested1,
+							"array_style": nested2,
+						}
+						result.SetMapStringNested(mapData)
+						return result
+					},
+				},
+
+				{
+					name: "Map field with non-map entry type",
+					messageLoader: MessageLoader{
+						Message: &testdatav1.KitchenSink{},
+					},
+					row: []bigquery.Value{
+						[]bigquery.Value{
+							"not_a_map", // This should trigger "unsupported BigQuery value for map entry"
+						},
+					},
+					schema: bigquery.Schema{
+						&bigquery.FieldSchema{
+							Name:     "map_string_nested",
+							Type:     bigquery.RecordFieldType,
+							Repeated: true,
+							Schema: bigquery.Schema{
+								&bigquery.FieldSchema{Name: "key", Type: bigquery.StringFieldType},
+								&bigquery.FieldSchema{
+									Name: "value",
+									Type: bigquery.RecordFieldType,
+									Schema: bigquery.Schema{
+										&bigquery.FieldSchema{Name: "text", Type: bigquery.StringFieldType},
+										&bigquery.FieldSchema{Name: "number", Type: bigquery.IntegerFieldType},
+										&bigquery.FieldSchema{Name: "flag", Type: bigquery.BooleanFieldType},
+										&bigquery.FieldSchema{Name: "tags", Type: bigquery.StringFieldType, Repeated: true},
+									},
+								},
+							},
+						},
+					},
+					expectedError: "unsupported BigQuery value for map entry",
+				},
 			},
 		},
 		{
