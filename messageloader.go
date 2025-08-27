@@ -174,32 +174,101 @@ func (o *MessageLoader) loadMessageValueMapField(
 ) error {
 	mapField := message.Mutable(field).Map()
 	for _, bqMapEntry := range bqMapField {
-		bqMapEntry, ok := bqMapEntry.(map[string]bigquery.Value)
-		if !ok {
+		// Handle null/nil map entries
+		if bqMapEntry == nil {
+			continue
+		}
+
+		// Handle map format entries (object format)
+		if entryMap, ok := bqMapEntry.(map[string]bigquery.Value); ok {
+			if len(entryMap) == 0 {
+				// Skip empty map entries
+				continue
+			}
+			// Process non-empty map entry
+			if err := o.processMapEntry(entryMap, bqFieldSchema, field, mapField); err != nil {
+				return err
+			}
+		} else if entryArray, ok := bqMapEntry.([]bigquery.Value); ok {
+			// Handle array format entries (BigQuery REPEATED RECORD format: [key, value])
+			if len(entryArray) == 0 {
+				// Skip empty array entries
+				continue
+			}
+			if err := o.loadArrayMapEntry(entryArray, bqFieldSchema, field, mapField); err != nil {
+				return err
+			}
+		} else {
 			return fmt.Errorf("%s: unsupported BigQuery value for map entry: %v", field.Name(), bqMapEntry)
 		}
-		mapEntryKey, err := o.unmarshalMapEntryKey(bqMapEntry)
-		if err != nil {
-			return err
-		}
-		bqMapEntryValue, ok := bqMapEntry["value"]
-		if !ok {
-			return fmt.Errorf("%s: map entry is missing value field", field.Name())
-		}
-		bqMapEntryMessageValue, ok := bqMapEntryValue.([]bigquery.Value)
-		if !ok {
-			return fmt.Errorf("%s: unsupported BigQuery value for message: %v", field.Name(), bqMapEntryValue)
-		}
-		if len(bqFieldSchema.Schema) != 2 || bqFieldSchema.Schema[1].Name != "value" {
-			return fmt.Errorf("%s: unsupported BigQuery schema for map entry", field.Name())
-		}
-		bqMapEntryValueSchema := bqFieldSchema.Schema[1].Schema
-		mapEntryValue := mapField.NewValue()
-		if err := o.loadMessage(bqMapEntryMessageValue, bqMapEntryValueSchema, mapEntryValue.Message()); err != nil {
-			return err
-		}
-		mapField.Set(mapEntryKey, mapEntryValue)
 	}
+	return nil
+}
+
+func (o *MessageLoader) processMapEntry(
+	bqMapEntry map[string]bigquery.Value,
+	bqFieldSchema *bigquery.FieldSchema,
+	field protoreflect.FieldDescriptor,
+	mapField protoreflect.Map,
+) error {
+	mapEntryKey, err := o.unmarshalMapEntryKey(bqMapEntry)
+	if err != nil {
+		return err
+	}
+	bqMapEntryValue, ok := bqMapEntry["value"]
+	if !ok {
+		return fmt.Errorf("%s: map entry is missing value field", field.Name())
+	}
+	bqMapEntryMessageValue, ok := bqMapEntryValue.([]bigquery.Value)
+	if !ok {
+		return fmt.Errorf("%s: unsupported BigQuery value for message: %v", field.Name(), bqMapEntryValue)
+	}
+	if len(bqFieldSchema.Schema) != 2 || bqFieldSchema.Schema[1].Name != "value" {
+		return fmt.Errorf("%s: unsupported BigQuery schema for map entry", field.Name())
+	}
+	bqMapEntryValueSchema := bqFieldSchema.Schema[1].Schema
+	mapEntryValue := mapField.NewValue()
+	if err := o.loadMessage(bqMapEntryMessageValue, bqMapEntryValueSchema, mapEntryValue.Message()); err != nil {
+		return err
+	}
+	mapField.Set(mapEntryKey, mapEntryValue)
+	return nil
+}
+
+func (o *MessageLoader) loadArrayMapEntry(
+	bqMapEntryArray []bigquery.Value,
+	bqFieldSchema *bigquery.FieldSchema,
+	field protoreflect.FieldDescriptor,
+	mapField protoreflect.Map,
+) error {
+	// BigQuery REPEATED RECORD format: [key, value]
+	// Expected schema: [{Name: "key", Type: STRING}, {Name: "value", Type: RECORD, Schema: [...]}]
+	if len(bqFieldSchema.Schema) != 2 {
+		return fmt.Errorf("%s: unsupported BigQuery schema for array-format map entry", field.Name())
+	}
+	if len(bqMapEntryArray) != 2 {
+		return fmt.Errorf("%s: array-format map entry must have exactly 2 elements [key, value], got %d", field.Name(), len(bqMapEntryArray))
+	}
+	// Extract key (first element)
+	bqMapEntryKey := bqMapEntryArray[0]
+	mapEntryKey := protoreflect.ValueOf(bqMapEntryKey).MapKey()
+	// Extract value (second element)
+	bqMapEntryValue := bqMapEntryArray[1]
+	bqMapEntryMessageValue, ok := bqMapEntryValue.([]bigquery.Value)
+	if !ok {
+		return fmt.Errorf("%s: unsupported BigQuery value for message in array-format entry: %v", field.Name(), bqMapEntryValue)
+	}
+	// Validate and extract value schema
+	if bqFieldSchema.Schema[1].Name != "value" {
+		return fmt.Errorf("%s: expected 'value' field in schema position 1 for array-format map entry", field.Name())
+	}
+	bqMapEntryValueSchema := bqFieldSchema.Schema[1].Schema
+	// Load the message value
+	mapEntryValue := mapField.NewValue()
+	if err := o.loadMessage(bqMapEntryMessageValue, bqMapEntryValueSchema, mapEntryValue.Message()); err != nil {
+		return err
+	}
+	mapField.Set(mapEntryKey, mapEntryValue)
 	return nil
 }
 
@@ -331,24 +400,69 @@ func (o *MessageLoader) unmarshalScalarValueMapField(
 ) error {
 	mapField := message.Mutable(field).Map()
 	for _, bqMapEntry := range bqMapField {
-		bqMapEntry, ok := bqMapEntry.(map[string]bigquery.Value)
-		if !ok {
+		// Handle null/nil map entries
+		if bqMapEntry == nil {
+			continue
+		}
+
+		// Handle map format entries (object format)
+		if entryMap, ok := bqMapEntry.(map[string]bigquery.Value); ok {
+			if len(entryMap) == 0 {
+				// Skip empty map entries
+				continue
+			}
+			// Process non-empty map entry
+			mapEntryKey, err := o.unmarshalMapEntryKey(entryMap)
+			if err != nil {
+				return err
+			}
+			bqMapEntryValue, ok := entryMap["value"]
+			if !ok {
+				return fmt.Errorf("%s: map entry is missing value field", field.Name())
+			}
+			mapEntryValue, err := o.unmarshalScalar(bqMapEntryValue, nil, field.MapValue())
+			if err != nil {
+				return err
+			}
+			mapField.Set(mapEntryKey, mapEntryValue)
+		} else if entryArray, ok := bqMapEntry.([]bigquery.Value); ok {
+			// Handle array format entries (BigQuery REPEATED RECORD format: [key, value])
+			if len(entryArray) == 0 {
+				// Skip empty array entries
+				continue
+			}
+			if err := o.processArrayScalarMapEntry(entryArray, field, mapField); err != nil {
+				return err
+			}
+		} else {
 			return fmt.Errorf("%s: unsupported BigQuery value for map entry: %v", field.Name(), bqMapEntry)
 		}
-		mapEntryKey, err := o.unmarshalMapEntryKey(bqMapEntry)
-		if err != nil {
-			return err
-		}
-		bqMapEntryValue, ok := bqMapEntry["value"]
-		if !ok {
-			return fmt.Errorf("%s: map entry is missing value field", field.Name())
-		}
-		mapEntryValue, err := o.unmarshalScalar(bqMapEntryValue, nil, field.MapValue())
-		if err != nil {
-			return err
-		}
-		mapField.Set(mapEntryKey, mapEntryValue)
 	}
+	return nil
+}
+
+func (o *MessageLoader) processArrayScalarMapEntry(
+	bqMapEntryArray []bigquery.Value,
+	field protoreflect.FieldDescriptor,
+	mapField protoreflect.Map,
+) error {
+	// BigQuery REPEATED RECORD format for scalar values: [key, value]
+	if len(bqMapEntryArray) != 2 {
+		return fmt.Errorf("%s: array-format map entry must have exactly 2 elements [key, value], got %d", field.Name(), len(bqMapEntryArray))
+	}
+
+	// Extract key (first element)
+	bqMapEntryKey := bqMapEntryArray[0]
+	mapEntryKey := protoreflect.ValueOf(bqMapEntryKey).MapKey()
+
+	// Extract value (second element)
+	bqMapEntryValue := bqMapEntryArray[1]
+	mapEntryValue, err := o.unmarshalScalar(bqMapEntryValue, nil, field.MapValue())
+	if err != nil {
+		return err
+	}
+
+	mapField.Set(mapEntryKey, mapEntryValue)
 	return nil
 }
 
@@ -360,60 +474,140 @@ func (o *MessageLoader) unmarshalRangeValueMapField(
 ) error {
 	mapField := message.Mutable(field).Map()
 	for _, bqMapEntry := range bqMapField {
-		bqMapEntry, ok := bqMapEntry.(map[string]bigquery.Value)
-		if !ok {
+		// Handle null/nil map entries
+		if bqMapEntry == nil {
+			continue
+		}
+
+		// Handle map format entries (object format)
+		if entryMap, ok := bqMapEntry.(map[string]bigquery.Value); ok {
+			if len(entryMap) == 0 {
+				// Skip empty map entries
+				continue
+			}
+			// Process non-empty map entry
+			mapEntryKey, err := o.unmarshalMapEntryKey(entryMap)
+			if err != nil {
+				return err
+			}
+			bqMapEntryValue, ok := entryMap["value"]
+			if !ok {
+				return fmt.Errorf("%s: map entry is missing value field", field.Name())
+			}
+
+			// Handle Range type in map value - create new value and unmarshal range into it
+			mapEntryValue := mapField.NewValue()
+			rangeValue, ok := bqMapEntryValue.(*bigquery.RangeValue)
+			if !ok {
+				return fmt.Errorf("unsupported BigQuery value for RANGE: %T", bqMapEntryValue)
+			}
+
+			rangeMessage := mapEntryValue.Message()
+			messageName := string(field.MapValue().Message().FullName())
+
+			// Get field descriptors for start and end
+			startField := rangeMessage.Descriptor().Fields().ByName("start")
+			endField := rangeMessage.Descriptor().Fields().ByName("end")
+			if startField == nil || endField == nil {
+				return fmt.Errorf("invalid range message type: missing start or end field in %s", messageName)
+			}
+
+			// Handle start value
+			if rangeValue.Start != nil {
+				startValue, err := o.unmarshalRangeValue(rangeValue.Start, startField, messageName)
+				if err != nil {
+					return fmt.Errorf("error unmarshaling range start: %w", err)
+				}
+				if startValue.IsValid() {
+					rangeMessage.Set(startField, startValue)
+				}
+			}
+
+			// Handle end value
+			if rangeValue.End != nil {
+				endValue, err := o.unmarshalRangeValue(rangeValue.End, endField, messageName)
+				if err != nil {
+					return fmt.Errorf("error unmarshaling range end: %w", err)
+				}
+				if endValue.IsValid() {
+					rangeMessage.Set(endField, endValue)
+				}
+			}
+
+			mapField.Set(mapEntryKey, mapEntryValue)
+		} else if entryArray, ok := bqMapEntry.([]bigquery.Value); ok {
+			// Handle array format entries (BigQuery REPEATED RECORD format: [key, value])
+			if len(entryArray) == 0 {
+				// Skip empty array entries
+				continue
+			}
+			if err := o.processArrayRangeMapEntry(entryArray, bqFieldSchema, field, mapField); err != nil {
+				return err
+			}
+		} else {
 			return fmt.Errorf("%s: unsupported BigQuery value for map entry: %v", field.Name(), bqMapEntry)
 		}
-		mapEntryKey, err := o.unmarshalMapEntryKey(bqMapEntry)
-		if err != nil {
-			return err
-		}
-		bqMapEntryValue, ok := bqMapEntry["value"]
-		if !ok {
-			return fmt.Errorf("%s: map entry is missing value field", field.Name())
-		}
-
-		// Handle Range type in map value - create new value and unmarshal range into it
-		mapEntryValue := mapField.NewValue()
-		rangeValue, ok := bqMapEntryValue.(*bigquery.RangeValue)
-		if !ok {
-			return fmt.Errorf("unsupported BigQuery value for RANGE: %T", bqMapEntryValue)
-		}
-
-		rangeMessage := mapEntryValue.Message()
-		messageName := string(field.MapValue().Message().FullName())
-
-		// Get field descriptors for start and end
-		startField := rangeMessage.Descriptor().Fields().ByName("start")
-		endField := rangeMessage.Descriptor().Fields().ByName("end")
-		if startField == nil || endField == nil {
-			return fmt.Errorf("invalid range message type: missing start or end field in %s", messageName)
-		}
-
-		// Handle start value
-		if rangeValue.Start != nil {
-			startValue, err := o.unmarshalRangeValue(rangeValue.Start, startField, messageName)
-			if err != nil {
-				return fmt.Errorf("error unmarshaling range start: %w", err)
-			}
-			if startValue.IsValid() {
-				rangeMessage.Set(startField, startValue)
-			}
-		}
-
-		// Handle end value
-		if rangeValue.End != nil {
-			endValue, err := o.unmarshalRangeValue(rangeValue.End, endField, messageName)
-			if err != nil {
-				return fmt.Errorf("error unmarshaling range end: %w", err)
-			}
-			if endValue.IsValid() {
-				rangeMessage.Set(endField, endValue)
-			}
-		}
-
-		mapField.Set(mapEntryKey, mapEntryValue)
 	}
+	return nil
+}
+
+func (o *MessageLoader) processArrayRangeMapEntry(
+	bqMapEntryArray []bigquery.Value,
+	bqFieldSchema *bigquery.FieldSchema,
+	field protoreflect.FieldDescriptor,
+	mapField protoreflect.Map,
+) error {
+	// BigQuery REPEATED RECORD format for range values: [key, range_value]
+	if len(bqMapEntryArray) != 2 {
+		return fmt.Errorf("%s: array-format map entry must have exactly 2 elements [key, value], got %d", field.Name(), len(bqMapEntryArray))
+	}
+
+	// Extract key (first element)
+	bqMapEntryKey := bqMapEntryArray[0]
+	mapEntryKey := protoreflect.ValueOf(bqMapEntryKey).MapKey()
+
+	// Extract value (second element) - should be a RangeValue
+	bqMapEntryValue := bqMapEntryArray[1]
+	rangeValue, ok := bqMapEntryValue.(*bigquery.RangeValue)
+	if !ok {
+		return fmt.Errorf("unsupported BigQuery value for RANGE in array-format entry: %T", bqMapEntryValue)
+	}
+
+	// Handle Range type - create new value and unmarshal range into it
+	mapEntryValue := mapField.NewValue()
+	rangeMessage := mapEntryValue.Message()
+	messageName := string(field.MapValue().Message().FullName())
+
+	// Get field descriptors for start and end
+	startField := rangeMessage.Descriptor().Fields().ByName("start")
+	endField := rangeMessage.Descriptor().Fields().ByName("end")
+	if startField == nil || endField == nil {
+		return fmt.Errorf("invalid range message type: missing start or end field in %s", messageName)
+	}
+
+	// Handle start value
+	if rangeValue.Start != nil {
+		startValue, err := o.unmarshalRangeValue(rangeValue.Start, startField, messageName)
+		if err != nil {
+			return fmt.Errorf("error unmarshaling range start: %w", err)
+		}
+		if startValue.IsValid() {
+			rangeMessage.Set(startField, startValue)
+		}
+	}
+
+	// Handle end value
+	if rangeValue.End != nil {
+		endValue, err := o.unmarshalRangeValue(rangeValue.End, endField, messageName)
+		if err != nil {
+			return fmt.Errorf("error unmarshaling range end: %w", err)
+		}
+		if endValue.IsValid() {
+			rangeMessage.Set(endField, endValue)
+		}
+	}
+
+	mapField.Set(mapEntryKey, mapEntryValue)
 	return nil
 }
 
@@ -425,26 +619,73 @@ func (o *MessageLoader) unmarshalWellKnownTypeValueMapField(
 ) error {
 	mapField := message.Mutable(field).Map()
 	for _, bqMapEntry := range bqMapField {
-		bqMapEntry, ok := bqMapEntry.(map[string]bigquery.Value)
-		if !ok {
-			return fmt.Errorf("%s: unsupported BigQuery value for map entry: %v", field.Name(), bqMapEntry)
-		}
-		mapEntryKey, err := o.unmarshalMapEntryKey(bqMapEntry)
-		if err != nil {
-			return err
-		}
-		bqMapEntryValue, ok := bqMapEntry["value"]
-		if !ok {
-			return fmt.Errorf("%s: map entry is missing value field", field.Name())
+		// Handle null/nil map entries
+		if bqMapEntry == nil {
+			continue
 		}
 
-		// Handle regular well-known type
-		mapEntryValue, err := o.unmarshalWellKnownTypeField(bqMapEntryValue, field.MapValue())
-		if err != nil {
-			return err
+		// Handle map format entries (object format)
+		if entryMap, ok := bqMapEntry.(map[string]bigquery.Value); ok {
+			if len(entryMap) == 0 {
+				// Skip empty map entries
+				continue
+			}
+			// Process non-empty map entry
+			mapEntryKey, err := o.unmarshalMapEntryKey(entryMap)
+			if err != nil {
+				return err
+			}
+			bqMapEntryValue, ok := entryMap["value"]
+			if !ok {
+				return fmt.Errorf("%s: map entry is missing value field", field.Name())
+			}
+
+			// Handle regular well-known type
+			mapEntryValue, err := o.unmarshalWellKnownTypeField(bqMapEntryValue, field.MapValue())
+			if err != nil {
+				return err
+			}
+			mapField.Set(mapEntryKey, mapEntryValue)
+		} else if entryArray, ok := bqMapEntry.([]bigquery.Value); ok {
+			// Handle array format entries (BigQuery REPEATED RECORD format: [key, value])
+			if len(entryArray) == 0 {
+				// Skip empty array entries
+				continue
+			}
+			if err := o.processArrayWellKnownTypeMapEntry(entryArray, field, mapField); err != nil {
+				return err
+			}
+		} else {
+			return fmt.Errorf("%s: unsupported BigQuery value for map entry: %v", field.Name(), bqMapEntry)
 		}
-		mapField.Set(mapEntryKey, mapEntryValue)
 	}
+	return nil
+}
+
+func (o *MessageLoader) processArrayWellKnownTypeMapEntry(
+	bqMapEntryArray []bigquery.Value,
+	field protoreflect.FieldDescriptor,
+	mapField protoreflect.Map,
+) error {
+	// BigQuery REPEATED RECORD format for well-known type values: [key, value]
+	if len(bqMapEntryArray) != 2 {
+		return fmt.Errorf("%s: array-format map entry must have exactly 2 elements [key, value], got %d", field.Name(), len(bqMapEntryArray))
+	}
+
+	// Extract key (first element)
+	bqMapEntryKey := bqMapEntryArray[0]
+	mapEntryKey := protoreflect.ValueOf(bqMapEntryKey).MapKey()
+
+	// Extract value (second element)
+	bqMapEntryValue := bqMapEntryArray[1]
+
+	// Handle well-known type
+	mapEntryValue, err := o.unmarshalWellKnownTypeField(bqMapEntryValue, field.MapValue())
+	if err != nil {
+		return err
+	}
+
+	mapField.Set(mapEntryKey, mapEntryValue)
 	return nil
 }
 
