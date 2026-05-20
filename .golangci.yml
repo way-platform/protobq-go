@@ -1,0 +1,10 @@
+version: "2"
+
+linters:
+  enable:
+    - gosec
+  settings:
+    gosec:
+      excludes:
+        # Pre-existing proto/BigQuery integer conversions; values are schema-bounded.
+        - G115
