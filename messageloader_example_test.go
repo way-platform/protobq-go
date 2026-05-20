@@ -16,7 +16,11 @@ func ExampleMessageLoader() {
 	if err != nil {
 		panic(err)
 	}
-	defer client.Close()
+	defer func() {
+		if err := client.Close(); err != nil {
+			panic(err)
+		}
+	}()
 	// 2. Run a query.
 	query := client.Query(`
 		SELECT

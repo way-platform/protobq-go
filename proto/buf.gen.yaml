@@ -14,7 +14,7 @@ inputs:
   - directory: "."
 
 plugins:
-  - local: ["go", "tool", "-modfile", "../tools/go.mod", "protoc-gen-go"]
+  - local: protoc-gen-go
     out: ../internal/gen
     opt:
       - module=github.com/way-platform/protobg-go/internal/gen
