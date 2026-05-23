@@ -91,12 +91,15 @@ func (o *MessageLoader) loadListField(
 	field protoreflect.FieldDescriptor,
 	message protoreflect.Message,
 ) error {
+	if bqField == nil {
+		return nil
+	}
 	if !bqFieldSchema.Repeated {
 		return fmt.Errorf("%s: unsupported field schema for list field: not repeated", field.Name())
 	}
 	bqList, ok := bqField.([]bigquery.Value)
 	if !ok {
-		return fmt.Errorf("%s: unsupported BigQuery value for message: %v", field.Name(), bqField)
+		return fmt.Errorf("%s: unsupported BigQuery value for list field: %T", field.Name(), bqField)
 	}
 	isMessage := field.Kind() == protoreflect.MessageKind || field.Kind() == protoreflect.GroupKind
 	switch {
@@ -148,9 +151,12 @@ func (o *MessageLoader) loadMapField(
 	field protoreflect.FieldDescriptor,
 	message protoreflect.Message,
 ) error {
+	if bqField == nil {
+		return nil
+	}
 	bqMapField, ok := bqField.([]bigquery.Value)
 	if !ok {
-		return fmt.Errorf("%s: unsupported BigQuery value for message: %v", field.Name(), bqField)
+		return fmt.Errorf("%s: unsupported BigQuery value for map field: %T", field.Name(), bqField)
 	}
 	mapValue := field.MapValue()
 	isMessage := mapValue.Kind() == protoreflect.MessageKind || mapValue.Kind() == protoreflect.GroupKind
@@ -1106,8 +1112,13 @@ func (o *MessageLoader) unmarshalScalar(
 		}
 
 	case protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Sfixed32Kind:
-		if n, ok := bqValue.(int64); ok {
-			return protoreflect.ValueOfInt32(int32(n)), nil
+		switch v := bqValue.(type) {
+		case int64:
+			return protoreflect.ValueOfInt32(int32(v)), nil
+		case string:
+			if i, err := strconv.ParseInt(v, 10, 32); err == nil {
+				return protoreflect.ValueOfInt32(int32(i)), nil
+			}
 		}
 
 	case protoreflect.Int64Kind:
@@ -1116,6 +1127,13 @@ func (o *MessageLoader) unmarshalScalar(
 			return protoreflect.ValueOfInt64(v), nil
 		case time.Time:
 			return protoreflect.ValueOfInt64(v.UnixMicro()), nil
+		case string:
+			if i, err := strconv.ParseInt(v, 10, 64); err == nil {
+				return protoreflect.ValueOfInt64(i), nil
+			}
+			if t, err := time.Parse(time.RFC3339Nano, v); err == nil {
+				return protoreflect.ValueOfInt64(t.UnixMicro()), nil
+			}
 		}
 
 	case protoreflect.Sint64Kind, protoreflect.Sfixed64Kind:
@@ -1139,8 +1157,13 @@ func (o *MessageLoader) unmarshalScalar(
 		}
 
 	case protoreflect.DoubleKind:
-		if n, ok := bqValue.(float64); ok {
-			return protoreflect.ValueOfFloat64(n), nil
+		switch v := bqValue.(type) {
+		case float64:
+			return protoreflect.ValueOfFloat64(v), nil
+		case string:
+			if f, err := strconv.ParseFloat(v, 64); err == nil {
+				return protoreflect.ValueOfFloat64(f), nil
+			}
 		}
 
 	case protoreflect.StringKind:
