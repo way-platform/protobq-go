@@ -2084,7 +2084,7 @@ func TestMessageLoader(t *testing.T) {
 							},
 						},
 					},
-					expectedError: "unsupported BigQuery value for message",
+					expectedError: "unsupported BigQuery value for map field",
 				},
 
 				{
@@ -3129,7 +3129,7 @@ func TestMessageLoader(t *testing.T) {
 							Repeated: true,
 						},
 					},
-					expectedError: "unsupported BigQuery value for message",
+					expectedError: "unsupported BigQuery value for list field",
 				},
 			},
 		},
@@ -3375,6 +3375,106 @@ func TestMessageLoader(t *testing.T) {
 						return &testdatav1.KitchenSink{}
 					},
 					expectedError: "invalid BigQuery value", // Should error on type mismatch
+				},
+			},
+		},
+		{
+			name: "nil_values",
+			testCases: []testCase{
+				{
+					name: "nil repeated scalar field",
+					messageLoader: MessageLoader{
+						Message: &testdatav1.KitchenSink{},
+					},
+					row: []bigquery.Value{
+						nil, // nil repeated_string
+						nil, // nil repeated_int32
+					},
+					schema: bigquery.Schema{
+						&bigquery.FieldSchema{Name: "repeated_string", Type: bigquery.StringFieldType, Repeated: true},
+						&bigquery.FieldSchema{Name: "repeated_int32", Type: bigquery.IntegerFieldType, Repeated: true},
+					},
+					expected: func() proto.Message {
+						return &testdatav1.KitchenSink{}
+					},
+				},
+				{
+					name: "nil repeated message field",
+					messageLoader: MessageLoader{
+						Message: &testdatav1.KitchenSink{},
+					},
+					row: []bigquery.Value{
+						nil, // nil repeated_nested
+					},
+					schema: bigquery.Schema{
+						&bigquery.FieldSchema{
+							Name:     "repeated_nested",
+							Type:     bigquery.RecordFieldType,
+							Repeated: true,
+							Schema: bigquery.Schema{
+								&bigquery.FieldSchema{Name: "text", Type: bigquery.StringFieldType},
+								&bigquery.FieldSchema{Name: "number", Type: bigquery.IntegerFieldType},
+							},
+						},
+					},
+					expected: func() proto.Message {
+						return &testdatav1.KitchenSink{}
+					},
+				},
+				{
+					name: "nil map field",
+					messageLoader: MessageLoader{
+						Message: &testdatav1.KitchenSink{},
+					},
+					row: []bigquery.Value{
+						nil, // nil map_string_string
+					},
+					schema: bigquery.Schema{
+						&bigquery.FieldSchema{
+							Name:     "map_string_string",
+							Type:     bigquery.RecordFieldType,
+							Repeated: true,
+							Schema: bigquery.Schema{
+								&bigquery.FieldSchema{Name: "key", Type: bigquery.StringFieldType},
+								&bigquery.FieldSchema{Name: "value", Type: bigquery.StringFieldType},
+							},
+						},
+					},
+					expected: func() proto.Message {
+						return &testdatav1.KitchenSink{}
+					},
+				},
+				{
+					name: "nil among populated fields",
+					messageLoader: MessageLoader{
+						Message: &testdatav1.KitchenSink{},
+					},
+					row: []bigquery.Value{
+						"hello",                                            // string_value
+						nil,                                                // nil repeated_string
+						[]bigquery.Value{int64(1), int64(2), int64(3)},     // repeated_int32
+						nil,                                                // nil map_string_string
+					},
+					schema: bigquery.Schema{
+						&bigquery.FieldSchema{Name: "string_value", Type: bigquery.StringFieldType},
+						&bigquery.FieldSchema{Name: "repeated_string", Type: bigquery.StringFieldType, Repeated: true},
+						&bigquery.FieldSchema{Name: "repeated_int32", Type: bigquery.IntegerFieldType, Repeated: true},
+						&bigquery.FieldSchema{
+							Name:     "map_string_string",
+							Type:     bigquery.RecordFieldType,
+							Repeated: true,
+							Schema: bigquery.Schema{
+								&bigquery.FieldSchema{Name: "key", Type: bigquery.StringFieldType},
+								&bigquery.FieldSchema{Name: "value", Type: bigquery.StringFieldType},
+							},
+						},
+					},
+					expected: func() proto.Message {
+						result := &testdatav1.KitchenSink{}
+						result.SetStringValue("hello")
+						result.SetRepeatedInt32([]int32{1, 2, 3})
+						return result
+					},
 				},
 			},
 		},
