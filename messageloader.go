@@ -1280,9 +1280,8 @@ func (o *MessageLoader) zeroValueForFieldSchema(field protoreflect.FieldDescript
 
 // validateJSONString validates that a string contains valid JSON
 func (o *MessageLoader) validateJSONString(str string) error {
-	var jsonObj interface{}
-	if err := json.Unmarshal([]byte(str), &jsonObj); err != nil {
-		return fmt.Errorf("invalid JSON: %w", err)
+	if !json.Valid([]byte(str)) {
+		return fmt.Errorf("invalid JSON")
 	}
 	return nil
 }
